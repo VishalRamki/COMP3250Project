@@ -64,6 +64,7 @@ function mysqli_prepared_query($link, $sql, $typeDef = FALSE, $params = FALSE) {
 			$queryResult = array();
 			
 			if(mysqli_stmt_execute($stmt)){
+				
 				$resultMetaData = mysqli_stmt_result_metadata($stmt);
 				
 				if($resultMetaData){
@@ -78,7 +79,7 @@ function mysqli_prepared_query($link, $sql, $typeDef = FALSE, $params = FALSE) {
 					$bindResultMethod = new ReflectionMethod('mysqli_stmt', 'bind_result');
 					$bindResultMethod->invokeArgs($stmt, $rowReferences);
 					
-					while(mysqli_stmt_fetch($stmt)){
+					while(mysqli_stmt_fetch($stmt)){							
 						$row = array();
 						foreach($stmtRow as $key => $value){
 							$row[$key] = $value;
@@ -167,6 +168,34 @@ function mysqli_prepared_query_insert($link, $sql, $typeDef = FALSE, $params = F
 	}
 	
 	return $ex;
+}
+
+function getColumn($input, $table) {
+	$hashes = array(
+		"Customer" => array(
+			"ID" => "CustomerID",
+			"NAME" => "CustomerName",
+			"NUMBER" => "PhoneNumber",
+			"ADDRESS" => "Address", 
+			"EMAIL" => "Email",
+			"VICINITY" => "Vicinity"
+		),
+		"Dish" => array(
+			"ID" => "DishID",
+			"NAME" => "DishName",
+			"TYPE" => "DishType"
+		),
+		"Order" => array(
+			"ID" => "OrderID",
+			"CUSTOMER" => "CustomerID",
+			"PAID" => "Paid",
+			"PICKUP" => "PickUp",
+			"DELIVERY" => "Deffered Delivery"
+		)
+	);
+	$in = strtoupper($input);
+	$out = $hashes[$table][$in];	
+	return $out;
 }
 
 ?>
