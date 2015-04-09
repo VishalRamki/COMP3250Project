@@ -26,31 +26,10 @@
 	 *
 	 */
 	 
-	// Global Template Vars 
-	$PATH = "template/";
 	// Template Libraries
-	require_once($PATH. "template.tpl.engine.php");
-	require_once($PATH. "multiview.tpl.engine.php");
+	require_once("template.tpl.engine.php");
+	require_once("multiview.tpl.engine.php");
 
 
 ?>
 
-
-
-<?php
-/*
-
-BASE EXAMPLES;
-
-$profile = new Template($PATH. "default/userprofile.php");
-$multiProfile = new MultiView($PATH. "default/userprofiles.php");
-
-$multiProfile->buildMultiStack(array(array("TE", "Xtra Xtra, Read All About it", "21", "UWI"), array("TR", "QWERTY", '33', "UWI")), array("username", "name", "age", "location"));
-
-$profile->set("users", $multiProfile->mergeMultiStack());
-$profile->buildHashFromArray(array("Team Cusine's Mega Awesome App (MAA)"), array("site-name"));
-
-echo $profile->output();
-
-*/
-?>
