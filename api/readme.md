@@ -9,6 +9,8 @@ Performing Functions On The Recordset
 ```
 /api/{resource}/{database_function}/{resource_identifer_on_which_to_sort}/{sort_by}
 
+/api/{resource}/{database_function}/{function_parameters}/
+
 /api/{resource}/{resource_identifier}/{value}/{database_function}/{resource_identifer_on_which_to_sort}/{sort_by}
 ```
 
