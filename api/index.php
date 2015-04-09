@@ -16,7 +16,7 @@ if (isset($_SERVER['PATH_INFO'])) {
 	$url_elements = explode('/', trim($_SERVER['PATH_INFO'], '/')); // Collect URL DATA
 }
 if (count($url_elements) == 0) {
-	$response = "API_DATA";
+	$response = "{[API_DATA]}";
 } else {
 	
 	switch(strtoupper($url_elements[0])) {
@@ -113,7 +113,7 @@ if (count($url_elements) == 0) {
 			} else if (strtoupper($sort_ids[$y]) == "LIMIT") {
 				$query .= " LIMIT ";	
 			}
-			echo $sort_ids[$y]."<br />";
+			
 			if (strtoupper($sort_ids[$y]) == "ASC") {
 				$query .= " ASC ";	
 			} else if (strtoupper($sort_ids[$y]) == "DESC") {
