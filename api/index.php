@@ -16,7 +16,7 @@ if (isset($_SERVER['PATH_INFO'])) {
 	$url_elements = explode('/', trim($_SERVER['PATH_INFO'], '/')); // Collect URL DATA
 }
 if (count($url_elements) == 0) {
-	$response = "{[API_DATA]}";
+	$response = "API_DATA";
 } else {
 	
 	switch(strtoupper($url_elements[0])) {
@@ -37,7 +37,7 @@ if (count($url_elements) == 0) {
 			
 		case "INGREDIENT":
 			
-			$tbl = "Ingredients";
+			$tbl = "Ingredient";
 			$query = $stmt_select_all_ingredients;
 				
 			break;
@@ -85,6 +85,8 @@ if (count($url_elements) == 0) {
 			if ($x <= $end) array_push($sort_ids, $url_elements[$x]);
 		} else {
 			array_push($identifers, getColumn($url_elements[$x++], $tbl));
+			if (strtoupper($url_elements[$x]) == "BIGGER" || strtoupper($url_elements[$x]) == "SMALLER")
+				array_push($identifers, $url_elements[$x++]);
 			array_push($params, $url_elements[$x]);
 			if (gettype($url_elements[$x]) == $const_STR)
 				$bindings .= 's';
@@ -96,10 +98,20 @@ if (count($url_elements) == 0) {
 	}
 				
 	if (count($identifers) > 0 ) {
-					
-		$query .= " WHERE " . $identifers[0] . " = ? ";
-					
-		for ($y = 1; $y < count($identifers); $y++){
+		$Q = 0;
+		$query .= " WHERE " . $identifers[$Q++] . " ";
+		
+		if (count($identifers) > 1 && strtoupper($identifers[$Q]) == "BIGGER") {
+			$query .= "> ? ";
+			$Q++;
+		} else if (count($identifers) > 1 && strtoupper($identifers[$Q]) == "SMALLER") {
+			$query .= "< ? ";
+			$Q++;
+		} else {
+			$query .= "= ? ";
+		}
+
+		for ($y = $Q; $y < count($identifers); $y++){
 			$query .= "AND " . $identifers[$y] . " = ? ";	
 		}
 			
@@ -124,7 +136,6 @@ if (count($url_elements) == 0) {
 		}
 	}
 	
-	echo $query;
 				
 	$response = mysqli_prepared_query($connection, $query, $bindings, $params);
 }
