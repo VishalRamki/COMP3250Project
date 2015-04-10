@@ -9,9 +9,9 @@ Performing Functions On The Recordset
 ```
 /api/{resource}/{database_function}/{resource_identifer_on_which_to_sort}/{sort_by}
 
-/api/{resource}/{database_function}/{function_parameters}/
-
 /api/{resource}/{resource_identifier}/{value}/{database_function}/{resource_identifer_on_which_to_sort}/{sort_by}
+
+/api/{resource}/{resource_identifier}/{value_equality}/{value}/{database_function}/{resource_identifer_on_which_to_sort}/{sort_by}
 ```
 
 This api call will return all rows with the `{Value}` inside the `{resource_indentifier}` from the `{resource}` tables in json format.
@@ -64,5 +64,14 @@ Function: LIMIT
 ```
 Function Parameters: {
     {integer}
+}
+```
+
+Function {value_equality}
+
+```
+Function Parameters: {
+    bigger or smaller,
+    {value}
 }
 ```
