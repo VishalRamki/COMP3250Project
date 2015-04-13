@@ -26,6 +26,12 @@ if (count($url_elements) == 0) {
 		// Posting Data To The API.
 		$isPost = 0;
 		$curr = 1;
+	} else if (strtoupper($url_elements[$curr]) == "DROP") {
+		// DELETEING Data To The API.
+		$isPost = 2;
+		$curr = 1;
+	} else {
+		$isPost = 1;	
 	}
 	
 	switch(strtoupper($url_elements[$curr])) {
@@ -124,6 +130,28 @@ if (count($url_elements) == 0) {
 			$query = "INSERT INTO " . $_tblingr . "(`IngredientName`, `IngredientType`) VALUES (?, ?)";
 			
 			$res = mysqli_prepared_query_insert($connection, $query, $bindings, $params);	 
+		} else if (strtoupper($tbl) == "DISH") {
+			$name = sanitize($_POST["DishName"]);
+			$price = sanitize($_POST["PriceID"]);
+			$desc = sanitize($_POST["Description"]);
+			$type = sanitize($_POST["DishType"]);
+			if (isset($_POST["ingredient"])) $ingredients = $_POST["ingredient"];
+			else $ingredients = array();
+			$params = array($name, $price, $desc, $type);
+			$bindings = buildBindings($params);
+		
+			$queryBase = "INSERT INTO dish (`DishName`, `PriceID`, `Description`, `DishType`) VALUES(?, ?, ?, ?)";
+			
+			$res = mysqli_prepared_query_insert($connection, $queryBase, $bindings, $params);
+			$last_id = $connection->insert_id;
+				
+			$queryTags = "INSERT INTO ".$_tblingrli." (`IngredientID`, `DishID`) VALUES (?, ?)";
+			
+				foreach($ingredients as $in) {
+					$paramx2 = array($in, $last_id);
+					$binding2s = buildBindings($paramx2);
+					$res2 = mysqli_prepared_query_insert($connection, $queryTags, $binding2s, $paramx2);
+				}
 		}
 		
 				
@@ -133,6 +161,59 @@ if (count($url_elements) == 0) {
 			$response = 1;
 		}
 		
+	} else if ($isPost == 2) { // Delete Data
+		
+		$bindings = "";
+		$params = array();
+		$identifers = array();
+		$start = 2;
+		$end = count($url_elements)-2;
+		$deleteID = -1;
+
+			for ($x = $start; $x <= $end; $x++) {
+				array_push($identifers, getColumn($url_elements[$x++], $tbl));
+				array_push($params, $url_elements[$x]);
+				$deleteID =  $url_elements[$x];
+				if (gettype($url_elements[$x]) == $const_STR)
+					$bindings .= 's';
+				else if (gettype($url_elements[$x]) == $const_INT)
+					$bindings .= 'i';
+			}
+
+
+		if (strtoupper($tbl) == "INGREDIENT") {
+
+			$query = "DELETE FROM ".$_tblingr. " ";
+			
+		} else if (strtoupper($tbl) == "CUSTOMER") {
+			$query = "DELETE FROM ".$_tblcust. " ";	
+		} else if (strtoupper($tbl) == "DISH") {
+			$query = "DELETE FROM ".$_tbldish. " ";
+		}
+		
+		
+		if (count($identifers) > 0 ) {
+			$Q = 0;
+			$query .= " WHERE " . $identifers[$Q++] . " = ?";
+			
+			for ($y = $Q; $y < count($identifers); $y++){
+				$query .= "AND " . $identifers[$y] . " = ? ";	
+			}
+					
+		}
+		
+		$res = mysqli_prepared_query($connection, $query, $bindings, $params);
+		// clear the bound lists;
+		if ($deleteID > 0) {
+			$delete = "DELETE FROM ".$_tblingrli." WHERE `DishID` = ".$deleteID;
+			$qres = mysqli_prepared_query_mod($connection, $delete, FALSE, FALSE);	
+		}
+
+		if ($res) {
+			$response = 0;  // Sucess	
+		} else {
+			$response = 1;
+		}
 	} else {
 				
 		$counter = 0;
@@ -156,6 +237,9 @@ if (count($url_elements) == 0) {
 			} else if (strtoupper($url_elements[$x]) == "LIMIT") {
 				array_push($sort_ids, $url_elements[$x++]);
 				if ($x <= $end) array_push($sort_ids, $url_elements[$x]);
+			} else if (strtoupper($url_elements[$x]) == "TIME") {
+				array_push($identifers, $url_elements[$x++]);
+				array_push($identifers, $url_elements[$x++]);
 			} else {
 				array_push($identifers, getColumn($url_elements[$x++], $tbl));
 				if (strtoupper($url_elements[$x]) == "BIGGER" || strtoupper($url_elements[$x]) == "SMALLER")
@@ -172,7 +256,11 @@ if (count($url_elements) == 0) {
 					
 		if (count($identifers) > 0 ) {
 			$Q = 0;
-			$query .= " WHERE " . $identifers[$Q++] . " ";
+			if (strtoupper($identifers[$Q]) == "TIME") {
+				$query .= " WHERE DATE(" . $identifers[$Q++] . ") ";	
+			} else {
+				$query .= " WHERE " . $identifers[$Q++] . " ";
+			}
 			
 			if (count($identifers) > 1 && strtoupper($identifers[$Q]) == "BIGGER") {
 				$query .= "> ? ";
@@ -181,7 +269,15 @@ if (count($url_elements) == 0) {
 				$query .= "< ? ";
 				$Q++;
 			} else {
-				$query .= "= ? ";
+				if (strtoupper($identifers[$Q]) == "TODAY") {
+					$query .= "= CURDATE()";	
+					$Q++;
+				} else if (strtoupper($identifers[$Q]) == "ALL_BEFORE_TODAY") {
+					$query .= "<= CURDATE()";	
+					$Q++;
+				} else {
+					$query .= "= ? ";
+				}
 			}
 	
 			for ($y = $Q; $y < count($identifers); $y++){
@@ -208,8 +304,7 @@ if (count($url_elements) == 0) {
 				}
 			}
 		}
-		
-					
+				
 		$response = mysqli_prepared_query($connection, $query, $bindings, $params);
 	
 	}
