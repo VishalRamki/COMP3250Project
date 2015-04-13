@@ -50,6 +50,13 @@ if (count($url_elements) == 0) {
 			$query = $stmt_select_all_ingredients;
 				
 			break;
+		
+		case "INGREDIENT_LIST":
+			
+			$tbl = "Ingredient_List";
+			$query = $stmt_select_all_ingredients_list;
+				
+			break;
 			
 		case "ORDER":
 			
@@ -72,8 +79,9 @@ if (count($url_elements) == 0) {
 	}
 	
 	if ($isPost == 0) {
-		// Post Stuff.	
-		$response .= "We Are Posting Stuff.";
+		// Post Stuff.
+		$res;
+		//$response .= "We Are Posting Stuff.";
 		
 		if (strtoupper($tbl) == "ORDER") {
 	
@@ -90,13 +98,39 @@ if (count($url_elements) == 0) {
 			
 			$query = "INSERT INTO orders (`CustomerID`, `TotalCost`, `Deffered Delivery`, `Paid`, `Status`, `PickUp`, `OrderDetailsID`) VALUES(?, ?, ?, ?, ?, ?, ?)";
 			
-			$res = mysqli_prepared_query_insert($connection, $query, $bindings, $params);
+			$res = mysqli_prepared_query_insert($connection, $query, $bindings, $params);	
+		} else if (strtoupper($tbl) == "CUSTOMER") {
 			
-			if ($res) {
-				$response = 0;  // Sucess	
-			} else {
-				$response = 1;
-			}	
+			$name = sanitize($_POST["CustomerName"]);
+			$phone = sanitize($_POST["PhoneNumber"]);
+			$add = sanitize($_POST["Address"]);
+			$em = sanitize($_POST["Email"]);
+			$vin = sanitize($_POST["Vicinity"]);
+			
+			$params = array($name, $phone, $add, $em, $vin);
+			$bindings = buildBindings($params);
+			
+			$query = "INSERT INTO ". $_tblcust . " (`CustomerName`, `PhoneNumber`, `Address`, `Email`, `Vicinity`) VALUES(?, ?, ?, ?, ?)";
+			
+			$res = mysqli_prepared_query_insert($connection, $query, $bindings, $params);	
+		} else if (strtoupper($tbl) == "INGREDIENT") {
+			
+			$type = sanitize($_POST["IngredientType"]);  	 
+			$name = sanitize($_POST["IngredientName"]);
+			
+			$params = array($name, $type);
+			$bindings = buildBindings($params);
+			
+			$query = "INSERT INTO " . $_tblingr . "(`IngredientName`, `IngredientType`) VALUES (?, ?)";
+			
+			$res = mysqli_prepared_query_insert($connection, $query, $bindings, $params);	 
+		}
+		
+				
+		if ($res) {
+			$response = 0;  // Sucess	
+		} else {
+			$response = 1;
 		}
 		
 	} else {
