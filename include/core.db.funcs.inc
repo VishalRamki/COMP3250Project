@@ -310,6 +310,16 @@ function getColumn($input, $table) {
 			"PAID" => "Paid",
 			"PICKUP" => "PickUp",
 			"DELIVERY" => "Deffered Delivery"
+		),
+		"Ingredient" => array(
+			"ID" => "IngredientID",
+			"NAME" => "IngredientName",
+			"TYPE" => "IngredientType"
+		),
+		"Ingredient_List" => array(
+			"ID" => "IngredientListID",
+			"INGREDIENT" => "IngredientID",
+			"DISH" => "DishID"
 		)
 	);
 	$in = strtoupper($input);
