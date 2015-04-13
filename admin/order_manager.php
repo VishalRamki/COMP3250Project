@@ -22,7 +22,7 @@ if (isset($_GET["order"]) && $_GET["order"] == "true") {
 	$params = array($customer, $totalCost, $def_deli, $paid, $status, $pickup, $orddets);
 	$bindings = buildBindings($params);
 	
-	$QUERY = "INSERT INTO orders (`CustomerID`, `TotalCost`, `Deffered Delivery`, `Paid`, `Status`, `PickUp`, `OrderDetailsID`) VALUES(?, ?, ?, ?, ?, ?, ?)";
+	$query = "INSERT INTO orders (`CustomerID`, `TotalCost`, `Deffered Delivery`, `Paid`, `Status`, `PickUp`, `OrderDetailsID`) VALUES(?, ?, ?, ?, ?, ?, ?)";
 	
 	$res = mysqli_prepared_query_insert($connection, $query, $bindings, $params);
 	
@@ -31,6 +31,7 @@ if (isset($_GET["order"]) && $_GET["order"] == "true") {
 	} else {
 		echo "Error.";	
 	}
+	return $res;
 	
 } else if (isset($_GET["view"])) {
 	
