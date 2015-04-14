@@ -302,14 +302,17 @@ function getColumn($input, $table) {
 		"Dish" => array(
 			"ID" => "DishID",
 			"NAME" => "DishName",
-			"TYPE" => "DishType"
+			"TYPE" => "DishType",
+			"PRICE" => "PriceID",
+			"DESCRIPTION" => "Description"
 		),
 		"Order" => array(
 			"ID" => "OrderID",
 			"CUSTOMER" => "CustomerID",
 			"PAID" => "Paid",
 			"PICKUP" => "PickUp",
-			"DELIVERY" => "Deffered Delivery"
+			"DELIVERY" => "Deffered Delivery",
+			"TIME" => "Time"
 		),
 		"Ingredient" => array(
 			"ID" => "IngredientID",
@@ -325,6 +328,11 @@ function getColumn($input, $table) {
 	$in = strtoupper($input);
 	$out = $hashes[$table][$in];	
 	return $out;
+}
+
+// NOT CORE DB FUNCTIONS
+function chopExtension($filename) {
+	return substr($filename, 0, strrpos($filename, '.'));
 }
 
 ?>
