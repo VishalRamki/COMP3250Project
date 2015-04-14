@@ -239,7 +239,7 @@ if (count($url_elements) == 0) {
 				if ($x <= $end) array_push($sort_ids, $url_elements[$x]);
 			} else if (strtoupper($url_elements[$x]) == "TIME") {
 				array_push($identifers, $url_elements[$x++]);
-				array_push($identifers, $url_elements[$x++]);
+				array_push($identifers, $url_elements[$x]);
 			} else {
 				array_push($identifers, getColumn($url_elements[$x++], $tbl));
 				if (strtoupper($url_elements[$x]) == "BIGGER" || strtoupper($url_elements[$x]) == "SMALLER")
@@ -269,10 +269,10 @@ if (count($url_elements) == 0) {
 				$query .= "< ? ";
 				$Q++;
 			} else {
-				if (strtoupper($identifers[$Q]) == "TODAY") {
+				if ($Q < count($identifers) && strtoupper($identifers[$Q]) == "TODAY") {
 					$query .= "= CURDATE()";	
 					$Q++;
-				} else if (strtoupper($identifers[$Q]) == "ALL_BEFORE_TODAY") {
+				} else if ($Q < count($identifers) && strtoupper($identifers[$Q]) == "ALL_BEFORE_TODAY") {
 					$query .= "<= CURDATE()";	
 					$Q++;
 				} else {
