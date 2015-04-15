@@ -34,6 +34,22 @@ if (count($url_elements) == 0) {
 		// Updating Data To API
 		$isPost = 3;
 		$curr = 1;
+	} else if (strtoupper($url_elements[$curr]) == "GUEST") {
+		
+		// Creates and Inserts a Guest.
+		
+		$key = sha1(time());
+		
+		$params = array($key);
+		$bindings = buildBindings($params);
+		
+		$query = "INSERT INTO ". $_tblguest ."(`HashKey`) VALUES(?)";
+		
+		$res = mysqli_prepared_query($connection, $query, $bindings, $params);
+		$re = $connection->insert_id;
+		header('Content-Type: application/json');
+		echo json_encode($re);
+		return;
 	} else {
 		$isPost = 1;	
 	}
