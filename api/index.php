@@ -30,6 +30,10 @@ if (count($url_elements) == 0) {
 		// DELETEING Data To The API.
 		$isPost = 2;
 		$curr = 1;
+	} else if (strtoupper($url_elements[$curr]) == "UPDATE") {
+		// Updating Data To API
+		$isPost = 3;
+		$curr = 1;
 	} else {
 		$isPost = 1;	
 	}
@@ -77,13 +81,27 @@ if (count($url_elements) == 0) {
 			$query = $stmt_select_all_prices;
 				
 			break;
+			
+		case "CART":
+		
+			$tbl = "Cart";
+			$query = $stmt_select_all_cart;
+		
+			break;
+			
+		case "CART_DETAILS":
+		
+			$tbl = "Cart_Details";
+			$query = $stmt_select_all_cartdet;
+		
+			break;
 		
 		default:
 			$response .= "Your Request Was Not Inputted Properly.";
 			break;
 		
 	}
-	
+	$skipX = -1;
 	if ($isPost == 0) {
 		// Post Stuff.
 		$res;
@@ -152,13 +170,43 @@ if (count($url_elements) == 0) {
 					$binding2s = buildBindings($paramx2);
 					$res2 = mysqli_prepared_query_insert($connection, $queryTags, $binding2s, $paramx2);
 				}
+		} else if (strtoupper($tbl) == "CART") {
+			$cust = sanitize($_POST["CustomerID"]);
+			
+			$params = array($cust);
+			$bindings = buildBindings($params);
+			
+			$queryBase = "INSERT INTO cart (`CustomerID`) Values (?)";
+			
+			$res = mysqli_prepared_query_insert($connection, $queryBase, $bindings, $params);
+			
+			if ($res) {
+				$response = $connection->insert_id;	
+				$skipX = 1;
+			} else {
+				$response = 1;	
+			}
+		} else if (strtoupper($tbl) == "CART_DETAILS") {
+			$dish = sanitize($_POST["DishID"]);
+			$qty = sanitize($_POST["Quantity"]);
+			$cart = sanitize($_POST["CartID"]);
+			
+			$params = array($cart, $dish, $qty);
+			$bindings = buildBindings($params);
+			
+			$queryBase = "INSERT INTO cartdetails (`CartID`, `DishID`, `Quantity`) Values (?, ?, ?)";
+			
+			$res = mysqli_prepared_query_insert($connection, $queryBase, $bindings, $params);
+			return;
+			$skipX = -1;
 		}
 		
-				
-		if ($res) {
-			$response = 0;  // Sucess	
-		} else {
-			$response = 1;
+		if ($skipX < 0) {
+			if ($res) {
+				$response = 0;  // Sucess	
+			} else {
+				$response = 1;
+			}	
 		}
 		
 	} else if ($isPost == 2) { // Delete Data
@@ -214,6 +262,62 @@ if (count($url_elements) == 0) {
 		} else {
 			$response = 1;
 		}
+	} else if ($isPost == 3) {
+		// Updating:
+		
+		$json = file_get_contents($GLOBALS["API_PATH"]."/".$url_elements[$curr]);
+		$arr = json_decode($json, true);
+		
+		if (strtoupper($url_elements[$curr]) == "DISH") {
+			$id = sanitize($_POST["DishID"]);
+			$name = sanitize($_POST["DishName"]);
+			$price = sanitize($_POST["PriceID"]);
+			$desc = sanitize($_POST["Description"]);
+			$type = sanitize($_POST["DishType"]);
+			if (isset($_POST["ingredient"])) $ingredients = $_POST["ingredient"];
+			else $ingredients = array();
+			$params = array($name, $price, $desc, $type, $id);
+			$bindings = buildBindings($params);
+			
+			$param2 = array_keys($arr[0]);
+			$queryBase = "UPDATE dish";
+			
+			$finalQuery = createQuery($queryBase, "UPDATE", $param2, array("DishID"));
+			$res = mysqli_prepared_query_mod($connection, $finalQuery, $bindings, $params);
+			$delete = "DELETE FROM ".$_tblingrli." WHERE `DishID` = ".$id;
+			$qres = mysqli_prepared_query_mod($connection, $delete, FALSE, FALSE);
+			
+			if ($qres) {
+				
+				$queryTags = "INSERT INTO ".$_tblingrli." (`IngredientID`, `DishID`) VALUES (?, ?)";
+			
+				foreach($ingredients as $in) {
+					$paramx2 = array($in, $id);
+					$binding2s = buildBindings($paramx2);
+					$res2 = mysqli_prepared_query_insert($connection, $queryTags, $binding2s, $paramx2);
+				}	
+			}	
+		} else if (strtoupper($url_elements[$curr]) == "INGREDIENT") {
+			$id = sanitize($_POST["IngredientID"]);
+			$name = sanitize($_POST["IngredientName"]);
+			$price = sanitize($_POST["IngredientType"]);
+			$params = array($name, $price, $id);
+			$bindings = buildBindings($params);
+			
+			$param2 = array_keys($arr[0]);
+			$queryBase = "UPDATE ingredients";
+			
+			$finalQuery = createQuery($queryBase, "UPDATE", $param2, array("IngredientID"));
+			$res = mysqli_prepared_query_mod($connection, $finalQuery, $bindings, $params);
+		}
+		
+				
+		if ($res) {
+			$response = 0;	
+		} else {
+			$response = 1;	
+		}
+		
 	} else {
 				
 		$counter = 0;
