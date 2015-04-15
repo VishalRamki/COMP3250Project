@@ -23,6 +23,7 @@ if($connection->connect_errno > 0){
 <link rel="stylesheet" href="design/base_style.css">
 <script src="http://code.jquery.com/jquery-latest.min.js" type="text/javascript"></script>
 <script src="design/menu/script.js"></script>
+<script src="design/js/bpopup.js"></script>
 <link rel="stylesheet" type="text/css" media="all" href="design/css/styles.css">
 <link rel="stylesheet" type="text/css" media="all" href="design/css/switchery.min.css">
 <script type="text/javascript" src="design/js/switchery.min.js"></script>
@@ -59,7 +60,7 @@ if($connection->connect_errno > 0){
 			$arr = json_decode($json, true);
 		?>
 <table cellspacing='0'> <!-- cellspacing='0' is important, must stay -->
-	<tr><th><a href="<?php echo $_SERVER["PHP_SELF"]; ?>?view=true&order=name">Dish Name</a></th><th><a href="<?php echo $_SERVER["PHP_SELF"]; ?>?view=true&order=price">Price</a></th><th><a href="<?php echo $_SERVER["PHP_SELF"]; ?>?view=true&order=description">Description</a></th><th><a href="<?php echo $_SERVER["PHP_SELF"]; ?>?view=true&order=type">Dish Type</a></th><th>Ingredients</th><th>Delete</th></tr><!-- Table Header -->
+	<tr><th><a href="<?php echo $_SERVER["PHP_SELF"]; ?>?view=true&order=name">Dish Name</a></th><th><a href="<?php echo $_SERVER["PHP_SELF"]; ?>?view=true&order=price">Price</a></th><th><a href="<?php echo $_SERVER["PHP_SELF"]; ?>?view=true&order=description">Description</a></th><th><a href="<?php echo $_SERVER["PHP_SELF"]; ?>?view=true&order=type">Dish Type</a></th><th>Ingredients</th><th>Delete</th><th>Edit</th></tr><!-- Table Header -->
     
     <?php foreach($arr as $row) { ?>
 	<tr><td><?php echo $row["DishName"]; ?></td><td><?php echo $row["PriceID"]; ?></td><td><?php echo $row["Description"]; ?></td><td><?php echo $row["DishType"]; ?></td>
@@ -83,13 +84,36 @@ if($connection->connect_errno > 0){
 		?>
 	</td>
     
-    <td><a href="<?php echo $GLOBALS["API_PATH"]; ?>/drop/dish/id/<?php echo $row["DishID"]; ?>">X</a></td></tr><!-- Table Row -->
+    <td><a href="#" class="del" value="<?php echo $row["DishID"] ?>">X</a></td><td><a href="<?php echo $_SERVER["PHP_SELF"]; ?>?edit=<?php echo $row["DishID"]; ?>">O</a></td></tr><!-- Table Row -->
     <?php } ?>
 </table>
 		</div>
-    
+        <div id="popup">
+        </div>
+<script type="text/javascript">
+$(function() { //shorthand document.ready function
+	
+    $('.del').on('click', function() { //use on if jQuery 1.7+
+		var id = $(this).attr("value");
+		var url = '/COMP3250/api/drop/dish/id'+id;
+		console.log(url);
+		$.post(url, {}, function(response) {
+			if (response == 0) {
+				$('#popup').append('Deleted Successfully.');
+				$("#popup").hide();
+				$("#popup").bPopup();
+			} else {
+			}
+			console.log("Response: "+response);
+		});
+		
+		
+    });
+	
+});
+</script>
     <?php } ?>
-    <?php if (!isset($_GET["view"])) { ?>
+    <?php if (!isset($_GET["view"]) && !isset($_GET["edit"])) { ?>
     	<div id="boxes" class="cf">
         	<h1>Add Dish</h1>
         </div>
@@ -171,6 +195,120 @@ $(function() { //shorthand document.ready function
 </script>
         </div>
         
+        <?php } ?>
+        
+        <?php if (isset($_GET["edit"])) { ?>
+        <?php
+			$json = file_get_contents($GLOBALS["API_PATH"]."/dish/id/".$_GET["edit"]);
+			$arr = json_decode($json, true);
+		?>
+    	<div id="boxes" class="cf">
+        	<h1>Editing: <?php echo $arr[0]["DishName"]; ?></h1>
+        </div>
+        
+        <div id="boxes" class="cf">
+  <div id="wrapper">  
+  <form id="dish_adder" method="post">
+  <input id="DishID" name="DishID" value="<?php echo $arr[0]["DishID"]; ?>" hidden="true" />
+  <div class="col-2">
+    <label>
+      Dish Name
+      <input placeholder="Name Of Your Dish" id="dishname" name="DishName" value="<?php echo $arr[0]["DishName"]; ?>" tabindex="1">
+    </label>
+  </div>
+  <div class="col-2">
+    <label>
+      Set Price
+      <input placeholder="Price Of Dish" id="price" name="PriceID" value="<?php echo $arr[0]["PriceID"] ?>" tabindex="2">
+    </label>
+  </div>
+  
+  <div class="col-2">
+    <label>
+      Dish Type
+      <input placeholder="Type Of Dish" id="dishtype" name="DishType" value="<?php echo $arr[0]["DishType"]; ?>" tabindex="3">
+    </label>
+  </div>
+  <div class="col-2">
+    <label>
+      Description Of Dish
+      <input placeholder="Description Of Dish" id="description" name="Description" value="<?php echo $arr[0]["Description"] ?>" tabindex="3">
+    </label>
+  </div>
+  
+  <?php
+	$json2 = file_get_contents($GLOBALS["API_PATH"]."/ingredient");
+	$arr2 = json_decode($json2, true);
+	$json3 = file_get_contents($GLOBALS["API_PATH"]."/ingredient_list/dish/".$arr[0]['DishID']);
+	$arr3 = json_decode($json3, true);
+	$skip = -1;
+	var_dump($arr2);
+	foreach ($arr2 as $row) {
+		foreach($arr3 as $row2) {
+			if ($row["IngredientID"] == $row2["IngredientID"]) {
+?>
+  <div class="col-4">NN
+    <label><?php echo $row["IngredientName"]; ?> (<?php echo $row["IngredientType"]; ?>)</label>
+    <center style="position:relative;margin-bottom:8px;"><input type="checkbox" checked id="ingredient[]" name="ingredient[]" value="<?php echo $row["IngredientID"]; ?>" class="js-switch"></center>
+  </div>
+  <?php 
+				$skip = 1;
+				break;
+			}  
+		}
+        if ($skip == 1) {
+			$skip = 0;	
+		} else {
+	?>
+  <div class="col-4">EE
+    <label><?php echo $row["IngredientName"]; ?> (<?php echo $row["IngredientType"]; ?>)</label>
+    <center style="position:relative;margin-bottom:8px;"><input type="checkbox" id="ingredient[]" name="ingredient[]" value="<?php echo $row["IngredientID"]; ?>" class="js-switch"></center>
+  </div>
+  <?php 
+  
+		}
+  
+	}
+  
+  ?>
+  <div class="col-submit">
+    <button class="submitbtn">Submit Form</button>
+  </div>
+  
+  </form>
+  </div>
+        </div>
+<script type="text/javascript">
+
+var elems = Array.prototype.slice.call(document.querySelectorAll('.js-switch'));
+
+elems.forEach(function(html) {
+  var switchery = new Switchery(html);
+});
+
+$(function() { //shorthand document.ready function
+	
+    $('#dish_adder').on('submit', function(e) { //use on if jQuery 1.7+
+        e.preventDefault();  //prevent form from submitting
+        var data = $("#dish_adder :input").serializeArray();
+        console.log(data); //use the console for debugging, F12 in Chrome, not alerts
+		
+		$.post('/COMP3250/api/update/dish', data, function(response) {
+			if (response == 0) {
+				$('#wrapper').prepend('<div id="boxes" class="cf"><div class="green-alert">Added Sucessfully.</div></div> ');
+				$(".green-alert").hide();
+				$(".green-alert").show();
+			} else {
+				$('#wrapper').prepend('<div id="boxes" class="cf"><div class="red-alert">Error. Retry.</div></div> ');
+				$(".red-alert").hide();
+				$(".red-alert").show();
+			}
+			console.log("Response: "+response);
+		});
+    });
+	
+});
+</script>
         <?php } ?>
     </div>
 </div>
