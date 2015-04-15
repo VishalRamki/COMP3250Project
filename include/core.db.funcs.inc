@@ -323,6 +323,16 @@ function getColumn($input, $table) {
 			"ID" => "IngredientListID",
 			"INGREDIENT" => "IngredientID",
 			"DISH" => "DishID"
+		),
+		"Cart" => array(
+			"ID" => "CartID",
+			"CUSTOMER" => "CustomerID",
+			"TIME" => "Time"
+		),
+		"Cart_Details" => array(
+			"ID" => "DetailID",
+			"CART" => "CartID",
+			"DISH" => "DishID"
 		)
 	);
 	$in = strtoupper($input);
