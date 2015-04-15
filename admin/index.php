@@ -26,6 +26,7 @@ if($connection->connect_errno > 0){
 <link rel="stylesheet" type="text/css" media="all" href="design/css/styles.css">
 <link rel="stylesheet" type="text/css" media="all" href="design/css/switchery.min.css">
 <script type="text/javascript" src="design/js/switchery.min.js"></script>
+<script src="http://code.highcharts.com/highcharts.js"></script>
 <title>Cuisine Core - Admin Panel - Dashboard</title>
 </head>
 
@@ -83,9 +84,9 @@ if($connection->connect_errno > 0){
             </div>
             
         </div>
-        <div id="boxes">
+        <div id="boxes" class="cf">
         	<div id="one-two-chart">
-            	<canvas id="chartOne" width="400" height="400"></canvas>
+            	<div id="chart-one" style="width: 100%; height: 400px;"></div>
             </div>
         </div>
     </div>
@@ -93,14 +94,54 @@ if($connection->connect_errno > 0){
 
 <script type="text/javascript">
 
+$(function () { 
+    $('#chart-one').highcharts({
+        chart: {
+            type: 'bar'
+        },
+        title: {
+            text: 'Best Selling Dishes'
+        },
+        xAxis: {
+            categories: ['Chicken', 'Sweet And Sour Chicken', 'Chaos Soup', 'Baked Chicken And Noodles', 'Chow Mein']
+        },
+        yAxis: {
+            title: {
+                text: 'Dishes Sold'
+            }
+        },
+        series: [{
+            name: 'Sold',
+            data: [13, 6, 12, 7, 18]
+        }]
+    });
+});
+
 $(function() {
 	
 	var un = -1, fun = -1;
 	
+			$.ajax({ url: "http://localhost/COMP3250/api/order/time/all_before_today/fullfilled/0/sort/id/desc/limit/3", success: function(data) {
+				
+				$("#fun").empty();
+				$.each(data, function(key, val) {
+					$("#fun").append("<li><p class='c'><a href='order.php?view=true&order="+val['OrderID']+"'>Order ID: "+val['OrderID']+"</p></li>");
+				});
+			}, dataType: "json", complete: callPickUp });
+	
+		$.ajax({ url: "http://localhost/COMP3250/api/order/time/all_before_today/fullfilled/1/sort/id/desc/limit/3", success: function(data) {
+			
+			$("#un").empty();
+			$.each(data, function(key, val) {
+				$("#un").append("<li><p class='c'><a href='order.php?view=true&order="+val['OrderID']+"'>Order ID: "+val['OrderID']+"</p></li>");
+			});
+			}, dataType: "json", complete: callPickUp2 });
+	
 	function callPickUp() {
 		setTimeout(function() {
-			$.ajax({ url: "http://localhost/COMP3250/api/order/time/all_before_today/pickup/0/sort/id/desc/limit/3", success: function(data) {
-				console.log(data);
+			$.ajax({ url: "http://localhost/COMP3250/api/order/time/all_before_today/fullfilled/0/sort/id/desc/limit/3", success: function(data) {
+				
+				$("#fun").empty();
 				$.each(data, function(key, val) {
 					$("#fun").append("<li><p class='c'><a href='order.php?view=true&order="+val['OrderID']+"'>Order ID: "+val['OrderID']+"</p></li>");
 				});
@@ -111,14 +152,16 @@ $(function() {
 	//callPickUp();
 	function callPickUp2() {
 		setTimeout(function() {
-		$.ajax({ url: "http://localhost/COMP3250/api/order/time/all_before_today/pickup/1/sort/id/desc/limit/3", success: function(data) {
-			console.log(data);
+		$.ajax({ url: "http://localhost/COMP3250/api/order/time/all_before_today/fullfilled/1/sort/id/desc/limit/3", success: function(data) {
+			
+			$("#un").empty();
 			$.each(data, function(key, val) {
 				$("#un").append("<li><p class='c'><a href='order.php?view=true&order="+val['OrderID']+"'>Order ID: "+val['OrderID']+"</p></li>");
 			});
 			}, dataType: "json", complete: callPickUp2 });
 		}, 3000);
 	}
+	
 });
 
 </script>
